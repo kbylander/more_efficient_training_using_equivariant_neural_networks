@@ -1,8 +1,7 @@
 import numpy as np
 import torch
 import torch.nn as nn
-from torchvision import datasets
-from torchvision import transforms
+from torchvision import transforms,models,datasets
 from torch.autograd import Variable
 from torchvision.models import vgg16, VGG16_Weights
 import matplotlib.pyplot as plt
@@ -33,8 +32,10 @@ load_data = {'test' : torch.utils.data.DataLoader(test_data, batch_size=64, shuf
  'train' : torch.utils.data.DataLoader(train_data,batch_size=64,shuffle=True)
 }
 
-model = vgg16(10)
-summary(model)                    #LINE 2
+model = vgg16(10,pretrained=True)
+model.classifier[-1] = torch.nn.Linear(4096,10)
+
+#summary(model,input_size=(3,32,32))
 
 loss_function = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(),lr=0.01)
@@ -55,10 +56,7 @@ def train(num_epochs, model, data):
             if (i+1) % 10 == 0:
                 print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}' 
                        .format(epoch + 1, num_epochs, i + 1, no_steps, loss.item()))
-            if (i+1 == 10): break
-        pass
 
-    pass
 
 def test(data,model):
     #setting drouput and normalization layers to evaluation mode
@@ -69,12 +67,13 @@ def test(data,model):
         total = 0
         for i,(images, labels) in enumerate(data["test"]):
             test_output = model(images)
-            train_acc = torch.sum(test_output == labels)
-            print(len(labels))
-            acc=train_acc/len(labels)
+            pred_y = torch.argmax(test_output,dim=1)
+            print("pred:",pred_y)
+            print("lab",labels)
+            acc = (pred_y == labels).sum().item() / float(labels.size(0))
             print('test accuracy: %.2f' % acc)
-            if (i+1) == 100: break
-        print('final test accuracy: %.2f' % acc)
+    print('final test accuracy: %.2f' % acc)
+        
 
 
 train(no_epochs,model,load_data)
