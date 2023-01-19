@@ -1,3 +1,10 @@
+"""
+Hello world classifier:
+Implementing VGG16 on MNIST dataset.
+
+To be run from the main folder
+"""
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -11,8 +18,8 @@ from torchsummary import summary
 device = torch.device("cpu")
 
 #transforms images(rezises and crops, transform to tensor)
-test_data=datasets.MNIST(root='./data',download=True,train=False,transform = transforms.Compose([transforms.Grayscale(3),transforms.CenterCrop(32),transforms.Resize(32),transforms.ToTensor()]))
-train_data=datasets.MNIST(root='./data',train=True,transform = transforms.Compose([transforms.Grayscale(3),transforms.CenterCrop(32),transforms.Resize(32),transforms.ToTensor()]))
+test_data=datasets.MNIST(root='./MNIST_test/data',download=True,train=False,transform = transforms.Compose([transforms.Grayscale(3),transforms.CenterCrop(32),transforms.Resize(32),transforms.ToTensor()]))
+train_data=datasets.MNIST(root='./MNIST_test/data',train=True,transform = transforms.Compose([transforms.Grayscale(3),transforms.CenterCrop(32),transforms.Resize(32),transforms.ToTensor()]))
 
 #split training set into training and validation dataset
 len_data=len(train_data)
@@ -28,18 +35,18 @@ np.random.shuffle(indices)
 train_samples, valid_samples=  torch.utils.data.SubsetRandomSampler(indices[split_ints:]),  torch.utils.data.SubsetRandomSampler(indices[:split_ints])
 print(len(train_samples),len(valid_samples))
 
-"""
 figure = plt.figure(figsize=(10, 8))
 cols, rows = 5, 5
 for i in range(1, cols * rows + 1):
     sample_idx = torch.randint(len(train_data), size=(1,)).item()
     img, label = train_data[sample_idx]
+    img=img[0:1,:,:]
     figure.add_subplot(rows, cols, i)
-    plt.title(label)
+    plt.title(label,pad=0)
     plt.axis("off")
     plt.imshow(img.squeeze(), cmap="gray")
 plt.show()
-"""
+
 
 load_data = {'test' : torch.utils.data.DataLoader(test_data, batch_size=100, shuffle=True),
  'train' : torch.utils.data.DataLoader(train_data,batch_size=100,shuffle=False,sampler=train_samples),
