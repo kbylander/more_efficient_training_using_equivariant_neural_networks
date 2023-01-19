@@ -1,11 +1,10 @@
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torchvision import transforms,models,datasets
-from torch.autograd import Variable
 from torchvision.models import vgg16, VGG16_Weights
 import matplotlib.pyplot as plt
-from torch.utils.data.sampler import SubsetRandomSampler
 from torchsummary import summary                     
 
 
@@ -14,6 +13,20 @@ device = torch.device("cpu")
 #transforms images(rezises and crops, transform to tensor)
 test_data=datasets.MNIST(root='./data',download=True,train=False,transform = transforms.Compose([transforms.Grayscale(3),transforms.CenterCrop(32),transforms.Resize(32),transforms.ToTensor()]))
 train_data=datasets.MNIST(root='./data',train=True,transform = transforms.Compose([transforms.Grayscale(3),transforms.CenterCrop(32),transforms.Resize(32),transforms.ToTensor()]))
+
+#split training set into training and validation dataset
+len_data=len(train_data)
+validation_size=0.2
+indices = list(range(len_data))
+
+#Calculate the number of instances in the validation set
+split_ints=int(np.floor(validation_size*len_data))
+
+#random shuffles and samples the indices to train/validation samples and then returns the respective data
+np.random.shuffle(indices)
+
+train_samples, valid_samples=  torch.utils.data.SubsetRandomSampler(indices[split_ints:]),  torch.utils.data.SubsetRandomSampler(indices[:split_ints])
+print(len(train_samples),len(valid_samples))
 
 """
 figure = plt.figure(figsize=(10, 8))
@@ -28,53 +41,62 @@ for i in range(1, cols * rows + 1):
 plt.show()
 """
 
-load_data = {'test' : torch.utils.data.DataLoader(test_data, batch_size=64, shuffle=True),
- 'train' : torch.utils.data.DataLoader(train_data,batch_size=64,shuffle=True)
+load_data = {'test' : torch.utils.data.DataLoader(test_data, batch_size=100, shuffle=True),
+ 'train' : torch.utils.data.DataLoader(train_data,batch_size=100,shuffle=False,sampler=train_samples),
+ 'validation' : torch.utils.data.DataLoader(train_data,batch_size=100,shuffle=False,sampler=valid_samples)
 }
 
-model = vgg16(10,pretrained=True)
-model.classifier[-1] = torch.nn.Linear(4096,10)
-
-#summary(model,input_size=(3,32,32))
-
+model = vgg16(10,pretrained=True,weights=VGG16_Weights.DEFAULT)
 loss_function = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(),lr=0.01)
+optimizer = torch.optim.Adam(model.parameters(),lr=0.0001)
+losses_list=[]
+val_acc=[]
+test_acc=[]
 
-no_epochs = 1
-
-def train(num_epochs, model, data):
-    model.train()
-
+def train(num_epochs, model, data,losses_list=losses_list,acc_list=val_acc):
+    print("started training")
     no_steps = len(data["train"])
     for epoch in range(num_epochs):
+        model.train()
+        losses=[]
         for i, (images,labels) in enumerate(data["train"]):
             output= model(images)
             loss = loss_function(output,labels)
             optimizer.zero_grad()
             loss.backward()
+            losses.append(loss.item())
             optimizer.step()
-            if (i+1) % 10 == 0:
-                print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}' 
-                       .format(epoch + 1, num_epochs, i + 1, no_steps, loss.item()))
+            if (i+1) == no_steps:
+                losses_list.append(sum(losses)/len(losses))
+                print (f'Finished epoch {epoch/num_epochs} with average loss: {losses_list[-1]}')
+
+        test(load_data['validation'],model,text='validation',no_batches=30,acc_list=acc_list)
 
 
-def test(data,model):
+def test(data,model,acc_list,no_batches=False,text="test"):
+    print("started", text)
     #setting drouput and normalization layers to evaluation mode
     model.eval()
     acc=0
+    num=0    
     with torch.no_grad():
-        correct = 0
-        total = 0
-        for i,(images, labels) in enumerate(data["test"]):
+        for i,(images, labels) in enumerate(data):
             test_output = model(images)
             pred_y = torch.argmax(test_output,dim=1)
-            print("pred:",pred_y)
-            print("lab",labels)
-            acc = (pred_y == labels).sum().item() / float(labels.size(0))
-            print('test accuracy: %.2f' % acc)
-    print('final test accuracy: %.2f' % acc)
-        
+            acc += (pred_y == labels).sum().item()
+            num += float(labels.size(0))
+            if no_batches and i+1>=no_batches: break
+    acc_list.append(acc/num)
+    print(f'average {text} accuracy: {acc_list[-1]}')
 
+train(3,model,load_data)
+test(load_data['test'],model,test_acc)
 
-train(no_epochs,model,load_data)
-test(load_data,model)
+figure = plt.figure(figsize=(3, 1))
+plt.plot(losses_list)
+plt.title("Loss")
+plt.plot(val_acc)
+plt.title('Accuracy during validation')
+plt.plot(test_acc)
+plt.title('Accuracy during testing')
+plt.show()
