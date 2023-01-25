@@ -32,7 +32,7 @@ split_ints=int(np.floor(validation_size*len_data))
 #random shuffles and samples the indices to train/validation samples and then returns the respective data
 np.random.shuffle(indices)
 
-train_samples, valid_samples=  torch.utils.data.SubsetRandomSampler(indices[split_ints:]),  torch.utils.data.SubsetRandomSampler(indices[:split_ints])
+train_samples, valid_samples = torch.utils.data.SubsetRandomSampler(indices[split_ints:]), torch.utils.data.SubsetRandomSampler(indices[:split_ints])
 print(len(train_samples),len(valid_samples))
 
 figure = plt.figure(figsize=(10, 8))
@@ -75,7 +75,7 @@ def train(num_epochs, model, data,losses_list=losses_list,acc_list=val_acc):
             optimizer.step()
             if (i+1) == no_steps:
                 losses_list.append(sum(losses)/len(losses))
-                print (f'Finished epoch {epoch/num_epochs} with average loss: {losses_list[-1]}')
+                print (f'Finished epoch {epoch+1}/{num_epochs} with average loss: {losses_list[-1]}')
 
         test(load_data['validation'],model,text='validation',no_batches=30,acc_list=acc_list)
 
@@ -96,14 +96,17 @@ def test(data,model,acc_list,no_batches=False,text="test"):
     acc_list.append(acc/num)
     print(f'average {text} accuracy: {acc_list[-1]}')
 
-train(3,model,load_data)
+train(5,model,load_data)
 test(load_data['test'],model,test_acc)
 
 figure = plt.figure(figsize=(3, 1))
+figure.add_subplot(3,1,1)
 plt.plot(losses_list)
-plt.title("Loss")
+plt.title("Loss",pad=0)
+figure.add_subplot(3,1,2)
 plt.plot(val_acc)
-plt.title('Accuracy during validation')
+plt.title('Accuracy during validation',pad=0)
+figure.add_subplot(3,1,3)
 plt.plot(test_acc)
-plt.title('Accuracy during testing')
-plt.show()
+plt.title('Accuracy during testing',pad=0)
+plt.savefig("MNIST_res")

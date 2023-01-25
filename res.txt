@@ -1,0 +1,23 @@
+Test with num_epochs = 3
+Finished epoch 0.0 with average loss: 0.24301299971921253
+started validation
+average validation accuracy: 0.9856666666666667
+Finished epoch 0.3333333333333333 with average loss: 0.04752084019964968
+started validation
+average validation accuracy: 0.9903333333333333
+Finished epoch 0.6666666666666666 with average loss: 0.027530212784646815
+started validation
+average validation accuracy: 0.9933333333333333
+started test
+average test accuracy: 0.9915
+
+other test, num_epochs = 5
+started training
+Finished epoch 0.6 with average loss: 0.0248079871373515
+started validation
+average validation accuracy: 0.9886666666666667
+Finished epoch 0.8 with average loss: 0.017293190030776864
+started validation
+average validation accuracy: 0.9936666666666667
+started test
+average test accuracy: 0.9921
