@@ -1,3 +1,4 @@
 *.zip
 *.amat
-
+*ubyte
+*.gz
