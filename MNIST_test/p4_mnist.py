@@ -8,9 +8,6 @@ import torch
 
 device='cuda' if torch.cuda.is_available() else 'cpu'
 
-#set group, we set 90 degree rotations here on the R^2 plane. 
-r2_act = gspaces.Rot2dOnR2(N=4)
-
 class C4SteerableCNN(torch.nn.Module):
     
     def __init__(self, n_classes=10):
@@ -145,7 +142,6 @@ class C4SteerableCNN(torch.nn.Module):
         # unwrap the output GeometricTensor
         # (take the Pytorch tensor and discard the associated representation)
         x = x.tensor
-        
         # classify with the final fully connected layers)
         x = self.fully_net(x.reshape(x.shape[0], -1))
         
