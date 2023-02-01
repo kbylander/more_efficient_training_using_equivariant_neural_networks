@@ -87,7 +87,7 @@ class C4SteerableCNN(torch.nn.Module):
         # convolution 6
         # the old output type is the input type to the next layer
         in_type = self.block5.out_type
-        # the output type of the sixth convolution layer are 64 regular feature fields of C8
+        # the output type of the sixth convolution layer are 64 regular feature fields of C4
         out_type = nn.FieldType(self.r2_act, 64*[self.r2_act.regular_repr])
         self.block6 = nn.SequentialModule(
             nn.R2Conv(in_type, out_type, kernel_size=5, padding=1, bias=False),
@@ -135,9 +135,10 @@ class C4SteerableCNN(torch.nn.Module):
         
         # pool over the spatial dimensions
         x = self.pool3(x)
-        
+
         # pool over the group
         x = self.gpool(x)
+
 
         # unwrap the output GeometricTensor
         # (take the Pytorch tensor and discard the associated representation)
@@ -177,7 +178,7 @@ class MnistRotDataset(Dataset):
 # to allow odd size filters, with stride 2 on a feature map. 
 pad=Pad((0,0,1,1),fill=0)
 
-#reduce artifacts (because of rotations) (im a little confused by this)
+#reduce artifacts (because of rotations)
 
 resize1 = Resize(87)
 resize2 = Resize(29)
@@ -192,10 +193,10 @@ def test_model(model: torch.nn.Module, x: Image):
     # evaluate the `model` on 4 rotated versions of the input image `x`
     model.eval()
     
-    wrmup = model(torch.randn(1, 1, 29, 29).to(device))
+    wrmup = model(torch.randn(1, 1, 28, 28).to(device))
     del wrmup
     
-    x = resize1(pad(x))
+    #x = resize1(pad(x))
     
     print()
     print('##########################################################################################')
@@ -203,7 +204,7 @@ def test_model(model: torch.nn.Module, x: Image):
     print(header)
     with torch.no_grad():
         for r in range(4):
-            x_transformed = totensor(resize2(x.rotate(r*90., Image.BILINEAR))).reshape(1, 1, 29, 29)
+            x_transformed = totensor(x.rotate(r*90., Image.BILINEAR)).reshape(1, 1, 28, 28)
             x_transformed = x_transformed.to(device)
 
             y = model(x_transformed)
@@ -223,16 +224,16 @@ x, y = next(iter(raw_mnist_test))
 # evaluate the model without training
 test_model(model, x)
 
-train_transform = Compose([pad,
-resize1,
-RandomRotation(180,resample=Image.Resampling.BILINEAR,expand=False),
-resize2,
+train_transform = Compose([#pad,
+#resize1,
+#RandomRotation(180,resample=Image.Resampling.BILINEAR,expand=False),
+#resize2,
 totensor])
 
 mnist_train= MnistRotDataset(mode='train',transform=train_transform)
 train_loader = torch.utils.data.DataLoader(mnist_train,batch_size=64)
 
-test_transform= Compose([pad,totensor])
+test_transform= Compose([totensor])
 mnist_test = MnistRotDataset(mode='test', transform=test_transform)
 test_loader = torch.utils.data.DataLoader(mnist_test, batch_size=64)
 
