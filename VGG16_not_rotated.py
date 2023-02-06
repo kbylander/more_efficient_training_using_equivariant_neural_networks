@@ -1,200 +1,184 @@
 from torch.utils.data import Dataset
-from torchvision.transforms import ToTensor, Compose
+from torchvision.transforms import Grayscale,ToTensor, Compose
+from sklearn.metrics import confusion_matrix
 import numpy as np
 from PIL import Image
-from e2cnn import gspaces
-from e2cnn import nn
+from torch import nn
 import torch
-from sklearn.metrics import confusion_matrix
+from torch import cuda
 
 device='cuda' if torch.cuda.is_available() else 'cpu'
+# Whether to train on a gpu
+train_on_gpu = cuda.is_available()
 
-number_classes=10
+#if available, set model to cuda,count gpu:s and print
+if train_on_gpu:
+    #model = model.to('cuda')
+    gpu_count = cuda.device_count()
+    print(f'{gpu_count} gpus detected.')
 
+number_classes = 10
 name_classes=['zero','one','two','three','four','five','six','seven','eight','nine']
-class C4SteerableCNN(torch.nn.Module):
+
+
+class VGG16(torch.nn.Module):
     
     def __init__(self, n_classes=number_classes):
         
-        super(C4SteerableCNN, self).__init__()
+        super(VGG16, self).__init__()
         
-        # the model is equivariant under rotations by 90 degrees, modelled by C4
-        self.r2_act = gspaces.Rot2dOnR2(N=4)
-        
-        # the input image is a scalar field, corresponding to the trivial representation
-        in_type = nn.FieldType(self.r2_act, [self.r2_act.trivial_repr])
-        
-        # we store the input type for wrapping the images into a geometric tensor during the forward pass
-        self.input_type = in_type
-
-        #conv relu dropout p=0.5
-
-        #block1
-        #defining out put type for block
-        out_type = nn.FieldType(self.r2_act,4*[self.r2_act.regular_repr])
 
         #conv1
-        self.conv1=nn.SequentialModule(
-            nn.R2Conv(in_type,out_type,kernel_size=3,stride=1, padding=1),
-            nn.InnerBatchNorm(out_type),
-            nn.ReLU(out_type,inplace=True),
+        in_type=1
+        out_type=4
+        self.conv1=nn.Sequential(
+            nn.Conv2d(in_type,out_type,kernel_size=3,stride=1, padding=1),
+            nn.BatchNorm2d(out_type),
+            nn.ReLU(inplace=True)
         )
 
         #conv2
-        in_type=self.conv1.out_type
-        self.conv2=nn.SequentialModule(
-            nn.R2Conv(in_type,out_type,kernel_size=3,stride=1, padding=1),
-            nn.InnerBatchNorm(out_type),
-            nn.ReLU(out_type,inplace=True),
+        in_type=4
+        self.conv2=nn.Sequential(
+            nn.Conv2d(in_type,out_type,kernel_size=3,stride=1, padding=1),
+            nn.BatchNorm2d(out_type),
+            nn.ReLU(inplace=True)
         )
 
         #maxpool 1
-        self.maxpool1=nn.SequentialModule(
-            nn.PointwiseMaxPool(out_type,stride=2,kernel_size=2, padding=0)
+        self.maxpool1=nn.Sequential(
+            nn.MaxPool2d(stride=2,kernel_size=2, padding=0)
         )
 
         #block 2
         #defining out put type for block
-        in_type=self.conv2.out_type
-        out_type = nn.FieldType(self.r2_act,8*[self.r2_act.regular_repr])
-
+        in_type=out_type
+        out_type *= 2
         #conv3
-        self.conv3=nn.SequentialModule(
-            nn.R2Conv(in_type,out_type,kernel_size=3,stride=1, padding=1),
-            nn.InnerBatchNorm(out_type),
-            nn.ReLU(out_type,inplace=True),
+        self.conv3=nn.Sequential(
+            nn.Conv2d(in_type,out_type,kernel_size=3,stride=1, padding=1),
+            nn.BatchNorm2d(out_type),
+            nn.ReLU(inplace=True)
         )
+        in_type=out_type
 
         #conv4
-        in_type=self.conv3.out_type
-        self.conv4=nn.SequentialModule(
-            nn.R2Conv(in_type,out_type,kernel_size=3,stride=1, padding=1),
-            nn.InnerBatchNorm(out_type),
-            nn.ReLU(out_type,inplace=True),
+        self.conv4=nn.Sequential(
+            nn.Conv2d(in_type,out_type,kernel_size=3,stride=1, padding=1),
+            nn.BatchNorm2d(out_type),
+            nn.ReLU(inplace=True)
         )
 
         #maxpool 2
-        self.maxpool2=nn.SequentialModule(
-            nn.PointwiseMaxPool(out_type,stride=2,kernel_size=2, padding=0)
+        self.maxpool2=nn.Sequential(
+            nn.MaxPool2d(stride=2,kernel_size=2, padding=0)
         )
 
         #block3
         #defining out put type for block
-        in_type=self.conv4.out_type
-        out_type = nn.FieldType(self.r2_act,16*[self.r2_act.regular_repr])
-
+        in_type=out_type
+        out_type *= 2
 
         #conv 5
-        self.conv5=nn.SequentialModule(
-            nn.R2Conv(in_type,out_type,kernel_size=3,stride=1, padding=1),
-            nn.InnerBatchNorm(out_type),
-            nn.ReLU(out_type,inplace=True),
+        self.conv5=nn.Sequential(
+            nn.Conv2d(in_type,out_type,kernel_size=3,stride=1, padding=1),
+            nn.BatchNorm2d(out_type),
+            nn.ReLU(inplace=True)
         )
 
+        in_type = out_type
         #conv 6
-        in_type=self.conv5.out_type
-        self.conv6=nn.SequentialModule(
-            nn.R2Conv(in_type,out_type,kernel_size=3,stride=1, padding=1),
-            nn.InnerBatchNorm(out_type),
-            nn.ReLU(out_type,inplace=True),
+        self.conv6=nn.Sequential(
+            nn.Conv2d(in_type,out_type,kernel_size=3,stride=1, padding=1),
+            nn.BatchNorm2d(out_type),
+            nn.ReLU(inplace=True)
         )
 
         #conv 7
-        in_type=self.conv6.out_type
-        self.conv7=nn.SequentialModule(
-            nn.R2Conv(in_type,out_type,kernel_size=3,stride=1, padding=1),
-            nn.InnerBatchNorm(out_type),
-            nn.ReLU(out_type,inplace=True),
+        self.conv7=nn.Sequential(
+            nn.Conv2d(in_type,out_type,kernel_size=3,stride=1, padding=1),
+            nn.BatchNorm2d(out_type),
+            nn.ReLU(inplace=True)
         )
 
         #maxpool 3
-        self.maxpool3=nn.SequentialModule(
-            nn.PointwiseMaxPool(out_type,stride=2,kernel_size=3, padding=1)
+        self.maxpool3=nn.Sequential(
+            nn.MaxPool2d(stride=2,kernel_size=3, padding=1)
         )
 
         #block 4
 
+        in_type=out_type
+        out_type *= 2
         #conv8
-        in_type=self.conv7.out_type
-        out_type = nn.FieldType(self.r2_act,32*[self.r2_act.regular_repr])
-        self.conv8=nn.SequentialModule(
-            nn.R2Conv(in_type,out_type,kernel_size=3,stride=1, padding=1),
-            nn.InnerBatchNorm(out_type),
-            nn.ReLU(out_type,inplace=True),
+        self.conv8=nn.Sequential(
+            nn.Conv2d(in_type,out_type,kernel_size=3,stride=1, padding=1),
+            nn.BatchNorm2d(out_type),
+            nn.ReLU(inplace=True)
         )
+        in_type=out_type
 
         #conv9
-        in_type=self.conv8.out_type
-        self.conv9=nn.SequentialModule(
-            nn.R2Conv(in_type,out_type,kernel_size=3,stride=1, padding=1),
-            nn.InnerBatchNorm(out_type),
-            nn.ReLU(out_type,inplace=True),
+        self.conv9=nn.Sequential(
+            nn.Conv2d(in_type,out_type,kernel_size=3,stride=1, padding=1),
+            nn.BatchNorm2d(out_type),
+            nn.ReLU(inplace=True)
         )
 
         #conv10
-        in_type=self.conv9.out_type
-        self.conv10=nn.SequentialModule(
-            nn.R2Conv(in_type,out_type,kernel_size=3,stride=1, padding=1),
-            nn.InnerBatchNorm(out_type),
-            nn.ReLU(out_type,inplace=True),
+        self.conv10=nn.Sequential(
+            nn.Conv2d(in_type,out_type,kernel_size=3,stride=1, padding=1),
+            nn.BatchNorm2d(out_type),
+            nn.ReLU(inplace=True)
         )
 
         #maxpool 4
-        self.maxpool4=nn.SequentialModule(
-            nn.PointwiseMaxPool(out_type,stride=2,kernel_size=2, padding=0)
+        self.maxpool4=nn.Sequential(
+            nn.MaxPool2d(stride=2,kernel_size=2, padding=0)
         )
 
         #block 5
+        in_type=out_type
+        out_type *= 2
+
         #conv11
-        in_type=self.conv10.out_type
-        out_type = nn.FieldType(self.r2_act,32*[self.r2_act.regular_repr])
-        self.conv11=nn.SequentialModule(
-            nn.R2Conv(in_type,out_type,kernel_size=3,stride=1, padding=1),
-            nn.InnerBatchNorm(out_type),
-            nn.ReLU(out_type,inplace=True),
+        self.conv11=nn.Sequential(
+            nn.Conv2d(in_type,out_type,kernel_size=3,stride=1, padding=1),
+            nn.BatchNorm2d(out_type),
+            nn.ReLU(inplace=True)
         )
+        in_type=out_type
 
         #conv12
-        in_type=self.conv11.out_type
-        self.conv12=nn.SequentialModule(
-            nn.R2Conv(in_type,out_type,kernel_size=3,stride=1, padding=1),
-            nn.InnerBatchNorm(out_type),
-            nn.ReLU(out_type,inplace=True),
+        self.conv12=nn.Sequential(
+            nn.Conv2d(in_type,out_type,kernel_size=3,stride=1, padding=1),
+            nn.BatchNorm2d(out_type),
+            nn.ReLU(inplace=True)
         )
 
         #conv13
-        in_type=self.conv12.out_type
-        self.conv13=nn.SequentialModule(
-            nn.R2Conv(in_type,out_type,kernel_size=3,stride=1, padding=1),
-            nn.InnerBatchNorm(out_type),
-            nn.ReLU(out_type,inplace=True),
+        self.conv13=nn.Sequential(
+            nn.Conv2d(in_type,out_type,kernel_size=3,stride=1, padding=1),
+            nn.BatchNorm2d(out_type),
+            nn.ReLU(inplace=True)
         )
 
         #maxpool 5
-        self.maxpool5=nn.SequentialModule(
-            nn.PointwiseMaxPool(out_type,stride=2,kernel_size=2, padding=0)
+        self.maxpool5=nn.Sequential(
+            nn.MaxPool2d(stride=2,kernel_size=2, padding=0)
             )
 
-        #group pooling
-        #out_type=self.conv13.out_type
-        self.gpool=nn.GroupPooling(out_type)
-        c=self.gpool.out_type.size
-
         #fully connected layer 1
-        self.fully_net=torch.nn.Sequential(
-            torch.nn.Linear(c,4096),
-            torch.nn.ReLU(4096),
-            torch.nn.Linear(4096,4096),
-            torch.nn.ReLU(4096),
-            torch.nn.Linear(4096,n_classes),
-            #torch.nn.Softmax()
+        self.fully_net=nn.Sequential(
+            nn.Linear(64,4096),
+            nn.ReLU(),
+            nn.Linear(4096,4096),
+            nn.ReLU(),
+            nn.Linear(4096,n_classes),
+            nn.Softmax()
         )
 
-    def forward(self, input: torch.Tensor):
-        # wrap the input tensor in a GeometricTensor
-        # (associate it with the input type)
-        x = nn.GeometricTensor(input, self.input_type)
-
+    def forward(self, x: torch.Tensor):
         x=self.conv1(x)
         x=self.conv2(x)
         x=self.maxpool1(x)
@@ -206,6 +190,7 @@ class C4SteerableCNN(torch.nn.Module):
         x=self.conv5(x)
         x=self.conv6(x)
         x=self.conv7(x)
+
         x=self.maxpool3(x)
 
         x=self.conv8(x)
@@ -217,13 +202,9 @@ class C4SteerableCNN(torch.nn.Module):
         x=self.conv12(x)
         x=self.conv13(x)
         x=self.maxpool5(x)
-        
-        x=self.gpool(x)
 
-        x = x.tensor
         # classify with the final fully connected layers)
         x = self.fully_net(x.reshape(x.shape[0], -1,))
-        
         return x
 
 class MnistRotDataset(Dataset):
@@ -255,7 +236,7 @@ class MnistRotDataset(Dataset):
 totensor=ToTensor()
 
 #build model
-model = C4SteerableCNN().to(device)
+model = VGG16().to(device)
 predicted=[]
 target=[]
 def test_model(model: torch.nn.Module, x: Image):
@@ -370,10 +351,10 @@ cf_matrix=confusion_matrix(target,predicted)
 df_cm=pd.DataFrame(cf_matrix/np.sum(cf_matrix,axis=1),index = name_classes, columns = name_classes)
 plt.figure(figsize=(15,10))
 sn.heatmap(df_cm,annot=True)
-plt.savefig('cf_matrix_names_2.png')
+plt.savefig('cf_matrix_names.png')
 
 plt.figure()
 plt.plot(accuracy)
 plt.xlabel("epoch nr")
 plt.ylabel("accuracy")
-plt.savefig("p4_3.png")
+plt.savefig("p4_2.png")

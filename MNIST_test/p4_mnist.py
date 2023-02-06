@@ -193,10 +193,10 @@ def test_model(model: torch.nn.Module, x: Image):
     # evaluate the `model` on 4 rotated versions of the input image `x`
     model.eval()
     
-    wrmup = model(torch.randn(1, 1, 28, 28).to(device))
+    wrmup = model(torch.randn(1, 1, 29, 29).to(device))
     del wrmup
     
-    #x = resize1(pad(x))
+    x = resize1(pad(x))
     
     print()
     print('##########################################################################################')
@@ -204,7 +204,7 @@ def test_model(model: torch.nn.Module, x: Image):
     print(header)
     with torch.no_grad():
         for r in range(4):
-            x_transformed = totensor(x.rotate(r*90., Image.BILINEAR)).reshape(1, 1, 28, 28)
+            x_transformed = totensor(resize2(x.rotate(r*90., Image.BILINEAR))).reshape(1, 1, 29, 29)
             x_transformed = x_transformed.to(device)
 
             y = model(x_transformed)
@@ -224,16 +224,16 @@ x, y = next(iter(raw_mnist_test))
 # evaluate the model without training
 test_model(model, x)
 
-train_transform = Compose([#pad,
-#resize1,
-#RandomRotation(180,resample=Image.Resampling.BILINEAR,expand=False),
-#resize2,
+train_transform = Compose([pad,
+resize1,
+RandomRotation(180,resample=Image.Resampling.BILINEAR,expand=False),
+resize2,
 totensor])
 
 mnist_train= MnistRotDataset(mode='train',transform=train_transform)
 train_loader = torch.utils.data.DataLoader(mnist_train,batch_size=64)
 
-test_transform= Compose([totensor])
+test_transform= Compose([pad,totensor])
 mnist_test = MnistRotDataset(mode='test', transform=test_transform)
 test_loader = torch.utils.data.DataLoader(mnist_test, batch_size=64)
 
