@@ -1,5 +1,4 @@
-# more_efficient_training_using_equivariant_neural_networks
-Master thesis @ Uppsala University
+#Master thesis @ Uppsala University
 
 Packages:
 absl-py==1.4.0
