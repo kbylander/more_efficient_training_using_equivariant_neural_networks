@@ -8,3 +8,7 @@ In this study, two convolutional neural networks and their respective equivarian
 dataset.py: The dataset handling is performed, via 'mode' a dataset partition can be selected. Remember to download the dataset. \
 models.py: All models in script is displayed here. \
 main.py: The models are run here, select what models, hyperparameters and dataset you want to load in. Paths (ABS_PATH) will have to be altered to correctly save the results 
+
+## Regarding results
+A overview of results, namely accuracy and time, for the models can be found in \
+results_accuracy_time.csv
