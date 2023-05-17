@@ -4,7 +4,7 @@ Convolutional Neural Networks are equivariant to translations; however they are 
 
 In this study, two convolutional neural networks and their respective equivariant counterparts are constructed and applied to the symmetry groups $D_4$ and $C_8$ to explore the impact on performance, batch normalisation, and data augmentation. Results suggest that data augmentation is irrelevant to an equivariant model, and equivariance to more symmetries can slightly improve accuracy. The convolutional neural networks rely heavily on batch normalisation, whereas the equivariant versions can maintain decreased accuracy.
 
-## Brief guidance of the scripts
+## Brief guidance of main scripts
 **dataset.py** <br />
 The dataset handling is performed, via 'mode' a dataset partition can be selected. Remember to download the dataset. \
 <br />
