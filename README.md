@@ -18,7 +18,7 @@ The models are run here, select what models, hyperparameters and dataset you wan
 A overview of results, namely accuracy and time, for the models can be found in \
 results_accuracy_time.csv
 
-## Packages you need
+## Necessary packages
 e2cnn  <br />
 torch  <br />
 torchvision  <br />
