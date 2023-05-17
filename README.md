@@ -9,8 +9,7 @@ In this study, two convolutional neural networks and their respective equivarian
 The dataset handling is performed, via 'mode' a dataset partition can be selected. Remember to download the dataset. \
 <br />
 **models.py** <br />
-All models in script is displayed here. <br />
-<br />
+Defines all models <br />
 **main.py** <br />
 The models are run here, select what models, hyperparameters and dataset you want to load in. Paths (ABS_PATH) will have to be altered to correctly save the results 
 
