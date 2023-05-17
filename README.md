@@ -17,3 +17,14 @@ The models are run here, select what models, hyperparameters and dataset you wan
 ## Regarding results
 A overview of results, namely accuracy and time, for the models can be found in \
 results_accuracy_time.csv
+
+## Packages you need
+e2cnn \ 
+torch \ 
+torchvision \ 
+numpy \ 
+pandas \ 
+matplotlib \
+seaborn \ 
+scikit-learn 
+
