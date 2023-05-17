@@ -19,12 +19,12 @@ A overview of results, namely accuracy and time, for the models can be found in 
 results_accuracy_time.csv
 
 ## Packages you need
-e2cnn \ 
-torch \ 
-torchvision \ 
-numpy \ 
-pandas \ 
-matplotlib \
-seaborn \ 
+e2cnn  <br />
+torch  <br />
+torchvision  <br />
+numpy  <br />
+pandas  <br />
+matplotlib  <br />
+seaborn  <br />
 scikit-learn 
 
