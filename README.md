@@ -12,7 +12,10 @@ The dataset handling is performed, via 'mode' a dataset partition can be selecte
 Defines all models \
 <br />
 **main.py** <br />
-The models are run here, select what models, hyperparameters and dataset you want to load in. Paths (ABS_PATH) will have to be altered to correctly save the results 
+The models are run here, select what models, hyperparameters and dataset you want to load in. Paths (ABS_PATH) will have to be altered to correctly save the results \
+<br />
+**run_main.sh** <br />
+Script used to run main on SLURM, specifically here on ALVIS, C3SE
 
 ## Regarding results
 A overview of results, namely accuracy and time, for the models can be found in \
