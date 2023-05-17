@@ -498,7 +498,8 @@ class CUSTOM(nn.Module):
             nn.Linear(c,256),
             nn.BatchNorm1d(256),
             nn.ReLU(),
-            nn.Dropout(p=0.35,inplace=True),
+            #this dropout was inplace=True for my experiments. 
+            nn.Dropout(p=0.35,inplace=False),
             nn.Linear(256,256),
             nn.BatchNorm1d(256),
             nn.ReLU(),
@@ -668,7 +669,8 @@ class CUSTOM_no_batchNorm(nn.Module):
             nn.Linear(c,256),
             nn.BatchNorm1d(256),
             nn.ReLU(),
-            nn.Dropout(p=0.35,inplace=True),
+            #this dropout was inplace=True for my experiments. 
+            nn.Dropout(p=0.35,inplace=False),
             nn.Linear(256,256),
             nn.BatchNorm1d(256),
             nn.ReLU(),
