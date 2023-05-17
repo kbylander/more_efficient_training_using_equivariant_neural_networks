@@ -2,23 +2,16 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import os
 
 import numpy as np
 np.set_printoptions(threshold=sys.maxsize)
 
 import torch
-import torch.nn as nn
-import matplotlib.pyplot as pyplot
-import pickle
 
-from torch.utils.data import Dataset
-from torchvision.transforms import RandomRotation
-from torchvision.transforms import Pad
 from torchvision.transforms import ToTensor
 from torchvision.transforms import Compose
 
-import torchvision.transforms.functional as TF
-import random
 
 from dataset import TEM_dataset
 
@@ -31,7 +24,7 @@ import time
 current_GMT = time.time()
 print("Time: ", current_GMT)
 
-
+#Use cuda if possible
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 if torch.cuda.is_available():
@@ -45,6 +38,8 @@ NAME_CLASSES = ['Adenovirus', 'Astrovirus', 'CCHF', 'Cowpox', 'Ebola', 'Influenz
 
 totensor = ToTensor()
 
+
+# Select hyperparameters for the model, the ABS path will name itself accordingly. 
 LEARNING_RATE = 7e-5
 BATCH_SIZE = 64
 WEIGHT_DECAY = 0.01
@@ -52,7 +47,8 @@ nr_epochs = 300
 angular_resolution = 4
 no_channels = 32
 
-from models import CUSTOM, G_CUSTOM, G_VGG16, VGG16 and versions without batch normalisation
+#Loading all models defined in from models.py file
+from models import CUSTOM, G_CUSTOM, G_VGG16, VGG16, G_CUSTOM_no_batchNorm,G_VGG16_no_batchnorm,CUSTOM_no_batchNorm,VGG16_no_batchnorm
 #Select CUSTOM or G_CUSTOM model 
 model=G_CUSTOM(14,angular_resolution,no_channels).to(device)
 #model.load_state_dict(torch.load('/mimer/NOBACKUP/groups/naiss2023-22-69/exjobb/results/g_custom/non_augmented_C6_LR7e-05_BS64_WD001_ep500_dir2/best_state_dict_ep89'))
@@ -68,8 +64,15 @@ print('Number of epochs:', nr_epochs)
 print('Number of starting channels:',no_channels)
 print('torch.manual_seed(0)')
 
+if not os.path.exists('./outputs'):
+    os.mkdir('./outputs')
 
-ABS_PATH='/mimer/NOBACKUP/groups/naiss2023-22-69/exjobb/results_seed0/g_custom/non_augmented_D' + str(angular_resolution) + '_LR'+ str(LEARNING_RATE) + '_BS' + str(BATCH_SIZE) + '_WD' + str(WEIGHT_DECAY).replace('.','') +'_ep' + str(nr_epochs)+'_dir2'
+#Change dir number and D for dihedral group and C for cyclic group
+#will overwrite existing outputs
+ABS_PATH='./outputs/non_augmented_D' + str(angular_resolution) + '_LR'+ str(LEARNING_RATE) + '_BS' + str(BATCH_SIZE) + '_WD' + str(WEIGHT_DECAY).replace('.','') +'_ep' + str(nr_epochs)+'_dir1'
+
+if not os.path.exists(ABS_PATH):
+    os.mkdir(ABS_PATH)
 
 filename_cf_test_best= ABS_PATH + '/cf_test_best.png'
 filename_cf_train_best = ABS_PATH + '/cf_train_best.png'
@@ -247,7 +250,6 @@ import seaborn as sn
 from sklearn.metrics import confusion_matrix
 import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib.ticker import (MultipleLocator, AutoMinorLocator)
 
 #creates and saves a confusion matrix at given filename path
 def plot_confusion_matrix(true,pred,filename,name,class_names=NAME_CLASSES):    
@@ -285,8 +287,9 @@ colors={'Convergence':'C4','Max':'C5'}
 print(conv_ind,max_ind)
 import pandas as pd
 #data=pd.DataFrame({'Test':data[0],'Train':data[1]})
-data=pd.DataFrame({'test acc':yb,'train acc':xb,'test index':list(range(yb)),'train index':list(range(len(xb)),'max acc':max_acc,'max ind':max_ind,'conv acc':conv_acc,'conv ind':conv_ind})
+data=pd.DataFrame({'test acc':yb,'train acc':xb,'test index':list(range(len(yb))),'train index':list(range(len(xb))),'max acc':max_acc,'max ind':max_ind,'conv acc':conv_acc,'conv ind':conv_ind})
 #markers=pd.DataFrame({'acc':[max_acc,conv_acc],'ind':[max_ind,conv_ind],'color':[3,4]})
+plt.figure()
 with sn.axes_style('darkgrid'):
     g=sn.despine()
     g=sn.scatterplot(data=data,x='max ind',y='max acc',color='C3',markers='o',label='Highest',zorder=4,alpha=0.6)

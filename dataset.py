@@ -8,7 +8,7 @@ class TEM_dataset():
     def __init__(self, mode, transform=None):
         assert mode in ['train','validation', 'test','augmented_train']
 
-        FILE_PATH='/mimer/NOBACKUP/groups/naiss2023-22-69/exjobb/data_backup/'
+        FILE_PATH='./data/'
         
         if mode == "augmented_train":
             data = np.load(FILE_PATH+'TEM_augmented_train_compressed.npy',allow_pickle=True)

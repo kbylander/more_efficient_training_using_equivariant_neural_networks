@@ -3,3 +3,5 @@
 *ubyte
 *.gz
 *.npy
+__pycache__
+*outputs*

@@ -140,7 +140,8 @@ class G_CUSTOM(nn.Module):
             nn.Linear(c,256),
             nn.BatchNorm1d(256),
             nn.ReLU(),
-            nn.Dropout(p=0.35,inplace=True),
+            #this dropout was inplace=True for my experiments. 
+            nn.Dropout(p=0.35,inplace=False),
             nn.Linear(256,256),
             nn.BatchNorm1d(256),
             nn.ReLU(),
@@ -165,7 +166,7 @@ class G_CUSTOM(nn.Module):
 
         x=self.conv3(x)
         x=self.conv4(x)
-        x=e2nn.tensor_directsum([x,x_block1])        
+        x=e2nn.tensor_directsum([x,x_block1])     
         x=self.maxpool2(x)
         x_block2 = x
 
@@ -322,7 +323,8 @@ class G_CUSTOM_no_batchNorm(nn.Module):
             nn.Linear(c,256),
             nn.BatchNorm1d(256),
             nn.ReLU(),
-            nn.Dropout(p=0.35,inplace=True),
+            #this dropout was inplace=True for my experiments. 
+            nn.Dropout(p=0.35,inplace=False),
             nn.Linear(256,256),
             nn.BatchNorm1d(256),
             nn.ReLU(),
@@ -347,7 +349,7 @@ class G_CUSTOM_no_batchNorm(nn.Module):
 
         x=self.conv3(x)
         x=self.conv4(x)
-        x=e2nn.tensor_directsum([x,x_block1])        
+        x=e2nn.tensor_directsum([x,x_block1])   
         x=self.maxpool2(x)
         x_block2 = x
 
@@ -382,15 +384,15 @@ class CUSTOM(nn.Module):
         106318.
 
     """
-    
-    def __init__(self, n_classes,angular_resolution=None,mult=None):
+    #for this model, angular resolution is not relevant
+    def __init__(self, n_classes,angular_resolution=None,mult=64):
         
         super(CUSTOM, self).__init__()
         
         #block 1
         #conv1
         in_type=1
-        out_type=64
+        out_type=mult
 
         #The GCNN used a pre-convolution layer, for  a fair comparison; same is applied here. 
         self.pre_conv=nn.Sequential(
@@ -551,15 +553,15 @@ class CUSTOM_no_batchNorm(nn.Module):
         106318.
 
     """
-    
-    def __init__(self, n_classes,angular_resolution=None,mult=None):
+    #Angular resolution is irrelevant for this model. 
+    def __init__(self, n_classes,angular_resolution=None,mult=64):
         
         super(CUSTOM_no_batchNorm, self).__init__()
         
         #block 1
         #conv1
         in_type=1
-        out_type=64
+        out_type=mult
 
         #The GCNN used a pre-convolution layer, for  a fair comparison; same is applied here. 
         self.pre_conv=nn.Sequential(
@@ -713,14 +715,14 @@ class CUSTOM_no_batchNorm(nn.Module):
 
 class VGG16(nn.Module):
     
-    def __init__(self, n_classes,angular_resolution=None,mult=None):
+    def __init__(self, n_classes,angular_resolution=None,mult=64):
         
         super(VGG16, self).__init__()
         
 
         #conv1
         in_type=1
-        out_type=64
+        out_type=mult
         self.conv1=nn.Sequential(
             nn.Conv2d(in_type,out_type,kernel_size=3,stride=1, padding=1),
             nn.BatchNorm2d(out_type),
@@ -907,14 +909,14 @@ class VGG16(nn.Module):
 
 class VGG16_no_batchnorm(nn.Module):
     
-    def __init__(self, n_classes):
+    def __init__(self, n_classes,angular_resolution=None,mult=64):
         
         super(VGG16_no_batchnorm, self).__init__()
         
 
         #conv1
         in_type=1
-        out_type=64
+        out_type=mult
         self.conv1=nn.Sequential(
             nn.Conv2d(in_type,out_type,kernel_size=3,stride=1, padding=1),
             #nn.BatchNorm2d(out_type),
