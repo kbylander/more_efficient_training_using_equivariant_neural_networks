@@ -1,0 +1,33 @@
+
+Architecture,Symmetrigrupp,Accuracy,Augmented?,Time,Epochs,GPU
+CUSTOM,Baseline,87.8%,yes,5.5h,300,A40
+CUSTOM,Baseline,69.9%,no,0.93h,300,A40
+CUSTOM,Baseline,83.3%,no,7.5h,2400,A40
+CUSTOM - No batch Norm,Baseline,20.4%,yes,4.7h,300,A40
+CUSTOM - No batch Norm,Baseline,20.7%,no,0.48h,300,A40
+,,,,,,,,
+CUSTOM,D4,88.4%,yes,47.5h,300,A40
+CUSTOM,D4,72.9%,no,8.0h,300,A40
+CUSTOM,D4,89.8%,no,62h,2400,A40
+CUSTOM - No batch Norm,D4,64.1%,yes,39.4h,300,A40
+CUSTOM - No batch Norm,D4,59.4%,no,6.5h,300,A40
+,,,,,,,,
+CUSTOM,C8,88.7%,yes,47.6h,300,A40
+CUSTOM,C8,64.1%,no,5.0h,300,A40
+CUSTOM,C8,89.0%,no,62.8h,2400,A40
+,,,,,,,,
+VGG16,Baseline,91.1%,Yes,8.9h,300,A40
+VGG16,Baseline,81.9%,no,1.5h,300,A40
+VGG16,Baseline,87.0%,no,12.3h,2400,A40
+VGG16-no batch norm,Baseline,20.6%,Yes,7.6h,300,A40
+VGG16-no batch norm,Baseline,20.6%,no,1.3h,300,A40
+,,,,,,,,
+VGG16,D4,91.0%,yes,88.9h,300,A40
+VGG16,D4,85.5%,no,14.7h,300,A40
+VGG16,D4,92.4%,no,120.0h,2400,A40
+VGG16-no batch norm,D4,72.6,yes,76.0h,300,A40
+VGG16-no batch norm,D4,67.9h,no,13.0h,300,A40
+,,,,,,,,
+VGG16,C8,92.0%,yes,88.8h,300,A40
+VGG16,C8,78.2%,no,14.8h,300,A40
+VGG16,C8,92.5%,no,121.0h,2400,A40
