@@ -2,3 +2,4 @@
 *.amat
 *ubyte
 *.gz
+*.npy
