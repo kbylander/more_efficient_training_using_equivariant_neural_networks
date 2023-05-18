@@ -1,4 +1,4 @@
-# More Efficient Training Using Equivariant Neural Networks
+# More efficient training using equivariant neural networks
 ### Master thesis at Uppsala University
 Convolutional Neural Networks are equivariant to translations; however they are not defined for other symmetries, and the class output may vary depending on the input's orientation. To mitigate this, the training data is augmented at the cost of increased redundancy in the model. Instead, an Group equivariant convolutional neural network can be built, thus increasing the equivariance to a larger symmetry group. 
 
